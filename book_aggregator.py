@@ -369,4 +369,4 @@ def delete_review(review_id):
 
 if __name__ == '__main__':
     init_db()
-    app.run(host='52.41.36.82', port=443, debug=False)
+    app.run(host='127.0.0.1', port=5000, debug=False)
