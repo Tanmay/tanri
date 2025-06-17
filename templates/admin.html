@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <a href="{{ url_for('index') }}" class="text-blue-500 mb-4 inline-block">Back to Home</a>
+        <h2 class="text-2xl mb-4">Admin Panel</h2>
+        <h3 class="text-xl mb-2">Add New Book</h3>
+        <form method="POST" class="mb-4">
+            <input type="hidden" name="add_book" value="1">
+            <input type="text" name="title" placeholder="Book Title" class="border p-2 rounded w-full mb-2" required>
+            <input type="text" name="author" placeholder="Author Name" class="border p-2 rounded w-full mb-2" required>
+            <input type="text" name="image_url" placeholder="Image URL (e.g., https://example.com/book.jpg)" class="border p-2 rounded w-full mb-2">
+            <textarea name="description" placeholder="Book Description" class="border p-2 rounded w-full mb-2"></textarea>
+            <button type="submit" class="bg-blue-500 text-white p-2 rounded">Add Book</button>
+        </form>
+        <h3 class="text-xl mb-2">Add New Store Listing</h3>
+        <form method="POST" class="mb-4">
+            <input type="hidden" name="add_store" value="1">
+            <select name="book_id" class="border p-2 rounded w-full mb-2" required>
+                {% for book in books %}
+                    <option value="{{ book[0] }}">{{ book[1] }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" name="store_name" placeholder="Store Name (e.g., Amazon)" class="border p-2 rounded w-full mb-2" required>
+            <input type="number" step="0.01" name="price" placeholder="Price (e.g., 19.99)" class="border p-2 rounded w-full mb-2" required>
+            <input type="text" name="url" placeholder="Store URL (e.g., https://amazon.com/book)" class="border p-2 rounded w-full mb-2" required>
+            <button type="submit" class="bg-blue-500 text-white p-2 rounded">Add Store Listing</button>
+        </form>
+        <h3 class="text-xl mb-2">Books</h3>
+        <table class="w-full mb-4">
+            <tr class="bg-gray-200">
+                <th class="p-2">ID</th>
+                <th class="p-2">Title</th>
+                <th class="p-2">Author</th>
+                <th class="p-2">Description</th>
+                <th class="p-2">Action</th>
+            </tr>
+            {% for book in books %}
+                <tr>
+                    <td class="p-2">{{ book[0] }}</td>
+                    <td class="p-2">{{ book[1] }}</td>
+                    <td class="p-2">{{ book[2] }}</td>
+                    <td class="p-2">{{ book[4] or 'No description' }}</td>
+                    <td class="p-2"><a href="{{ url_for('delete_book', book_id=book[0]) }}" class="text-red-500">Delete</a></td>
+                </tr>
+            {% endfor %}
+        </table>
+        <h3 class="text-xl mb-2">Users</h3>
+        <table class="w-full mb-4">
+            <tr class="bg-gray-200">
+                <th class="p-2">ID</th>
+                <th class="p-2">Username</th>
+                <th class="p-2">Admin</th>
+                <th class="p-2">Subscribed</th>
+                <th class="p-2">Action</th>
+            </tr>
+            {% for user in users %}
+                <tr>
+                    <td class="p-2">{{ user[0] }}</td>
+                    <td class="p-2">{{ user[1] }}</td>
+                    <td class="p-2">{{ 'Yes' if user[3] else 'No' }}</td>
+                    <td class="p-2">{{ 'Yes' if user[4] else 'No' }}</td>
+                    <td class="p-2"><a href="{{ url_for('delete_user', user_id=user[0]) }}" class="text-red-500">Delete</a></td>
+                </tr>
+            {% endfor %}
+        </table>
+        <h3 class="text-xl mb-2">Store Listings</h3>
+        <table class="w-full mb-4">
+            <tr class="bg-gray-200">
+                <th class="p-2">ID</th>
+                <th class="p-2">Book ID</th>
+                <th class="p-2">Store Name</th>
+                <th class="p-2">Price</th>
+                <th class="p-2">URL</th>
+                <th class="p-2">Action</th>
+            </tr>
+            {% for store in books %}
+                <tr>
+                    <td class="p-2">{{ store[0] }}</td>
+                    <td class="p-2">{{ store[1] }}</td>
+                    <td class="p-2">{{ store[2] }}</td>
+                    <td class="p-2">${{ store[3] }}</td>
+                    <td class="p-2"><a href="{{ store[4] }}" class="text-blue-500">{{ store[4] }}</a></td>
+                    <td class="p-2">
+                        <a href="{{ url_for('edit_store', store_id=store[0]) }}" class="text-blue-500 mr-2">Edit</a>
+                        <a href="{{ url_for('delete_store', store_id=store[0]) }}" class="text-red-500">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+        <h3 class="text-xl mb-2">Reviews</h3>
+        <table class="w-full">
+            <tr class="bg-gray-200">
+                <th class="p-2">ID</th>
+                <th class="p-2">Book</th>
+                <th class="p-2">User</th>
+                <th class="p-2">Rating</th>
+                <th class="p-2">Comment</th>
+                <th class="p-2">Action</th>
+            </tr>
+            {% for review in reviews %}
+                <tr>
+                    <td class="p-2">{{ review[0] }}</td>
+                    <td class="p-2">{{ review[5] }}</td>
+                    <td class="p-2">{{ review[6] }}</td>
+                    <td class="p-2">{{ review[3] }}</td>
+                    <td class="p-2">{{ review[4] }}</td>
+                    <td class="p-2"><a href="{{ url_for('delete_review', review_id=review[0]) }}" class="text-red-500">Delete</a></td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

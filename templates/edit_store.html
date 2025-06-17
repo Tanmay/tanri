@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Store Listing</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <a href="{{ url_for('admin') }}" class="text-blue-500 mb-4 inline-block">Back to Admin</a>
+        <h2 class="text-2xl mb-4">Edit Store Listing</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="bg-{{ 'green' if category == 'success' else 'red' }}-100 border border-{{ 'green' if category == 'success' else 'red' }}-400 text-{{ 'green' if category == 'success' else 'red' }}-700 px-4 py-3 rounded mb-4">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST">
+            <select name="book_id" class="border p-2 rounded w-full mb-2" required>
+                {% for book in books %}
+                    <option value="{{ book[0] }}" {% if book[0] == store[1] %}selected{% endif %}>{{ book[1] }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" name="store_name" placeholder="Store Name (e.g., Amazon)" value="{{ store[2] }}" class="border p-2 rounded-lg w-full" required>
+            <input type="number" step="0.01" name="price" placeholder="Price (e.g., 19.99)" value="{{ store[3] }}" class="border p-2 rounded-lg w-full" required>
+            <input type="text" name="url" placeholder="Store URL (e.g., https://amazon.com/book)" value="{{ store[4] }}" class="border p-2 rounded-lg w-full" required>
+            <button type="submit" class="bg-blue-500 text-white rounded-lg p-2 px-4 mt-2">Update Store Listing</button>
+        </form>
+    </div>
+</body>
+</html>

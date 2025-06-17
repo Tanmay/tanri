@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tanri Book Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-green-500 p-4">
+        <div class="container mx-auto flex justify-between">
+            <a href="{{ url_for('index') }}" class="text-white text-lg font-bold">Tanri Book Store</a>
+            <div>
+                {% if session.user_id %}
+                    {% if session.is_admin %}
+                        <a href="{{ url_for('admin') }}" class="text-white mr-4">Admin</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}" class="text-white">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="text-white mr-4">Login</a>
+                    <a href="{{ url_for('register') }}" class="text-white">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    <div class="container mx-auto p-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="bg-{{ 'green' if category == 'success' else 'red' }}-100 border border-{{ 'green' if category == 'success' else 'red' }}-400 text-{{ 'green' if category == 'success' else 'red' }}-700 px-4 py-3 rounded mb-4">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="dark:bg-gray-800">
+            <div class="dark:bg-transparent">
+                <div class="mx-auto flex flex-col items-center py-12 sm:py-24">
+                    <div class="w-11/12 sm:w-2/3 lg:flex justify-center items-center flex-col mb-5 sm:mb-10">
+                        <h1
+                            class="text-4xl sm:text-5xl md:text-5xl lg:text-5xl xl:text-6xl text-center text-gray-800 dark:text-white font-black leading-10">
+                            Discover Great
+                            <span class="text-violet-800 dark:text-violet-500">Books.</span>
+                        </h1>
+                        <p class="mt-5 sm:mt-10 lg:w-10/12 text-gray-600 dark:text-gray-300 font-normal text-center text-xl">
+                            
+                            Browse our curated collection of quality books. All orders fulfilled through your trusted stores.
+                        </p>
+                    </div>
+                    <div class="flex w-11/12 md:w-8/12 xl:w-6/12">
+                        <div class="flex rounded-md w-full  justify-center ">    
+                            <form method="POST" class="mb-4">
+                                <div class="flex">
+                                    <input type="text" name="search" placeholder="Search by title or author..." value="{{ search_query }}" class="border p-2 rounded-l w-full">
+                                    <button type="submit" class="bg-green-500 text-white p-2 rounded-r">Search</button>
+                                </div>
+                            </form>
+        
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if books %}
+            <p class="text-gray-700 mb-4">Showing {{ (page - 1) * per_page + 1 }} - {{ ((page - 1) * per_page + books|length) }} of {{ total_books }} books</p>
+            {% for data in books %}
+                <div class="bg-white p-4 rounded shadow mb-4 flex">
+                    {% if data.book[3] %}
+                        <img src="{{ data.book[3] }}" alt="{{ data.book[1] }} cover" class="w-32 h-48 object-cover mr-4 rounded">
+                    {% else %}
+                        <div class="w-32 h-48 bg-gray-200 mr-4 rounded flex items-center justify-center">No Image</div>
+                    {% endif %}
+                    <div class="flex-1">
+                        <h3 class="text-xl mb-2">{{ data.book[1] }}</h3>
+                        <p class="mb-2">Author: {{ data.book[2] }}</p>
+                        <p class="mb-2">{{ data.book[4] }}</p>
+                        <h4 class="text-lg mb-2">Buy Now</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div class="bg-gray-100 p-4 rounded">
+                            {% for store in data.stores %}
+                                    <p><strong>{{ store[2] }}</strong></p>
+                                    <p>Price: &#8377; {{ store[3] }} + shipping</p>
+                                    <a href="{{ store[4] }}" class="bg-green-500 text-white p-2 rounded inline-block">Buy from {{ store[2] }}</a>
+                            {% endfor %}
+                            </div>
+                            <div class="bg-gray-100 p-4 rounded">
+                                <h4 class="text-lg mb-2">Reviews</h4>
+                                {% for review in data.reviews %}
+                                    <div class="bg-gray-100 p-4 rounded mb-2">
+                                        <p><strong>{{ review[5] }}</strong>: 
+                                            {% if review[3]==1 %} &#11088; {% endif %}
+                                            {% if review[3]==2 %} &#11088;&#11088; {% endif %}
+                                            {% if review[3]==3 %} &#11088;&#11088;&#11088; {% endif %}
+                                            {% if review[3]==4 %} &#11088;&#11088;&#11088;&#11088; {% endif %}
+                                            {% if review[3]==5 %} &#11088;&#11088;&#11088;&#11088;&#11088; {% endif %}</p>
+                                        <p>{{ review[4] }}</p>
+                                        {% if session.user_id and review[2] == session.user_id %}
+                                            <form method="POST" action="{{ url_for('delete_review_user', review_id=review[0]) }}" class="mt-2">
+                                                <button type="submit" class="text-red-500 text-sm">Delete Your Review</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                                {% if session.user_id %}
+                                    {% if session.is_subscribed %}
+                                        <h4 class="text-lg mt-4 mb-2">{{ 'Edit Your Review' if data.user_review else 'Add a Review' }}</h4>
+                                        <form method="POST" action="{{ url_for('review', book_id=data.book[0]) }}">
+                                            <select name="rating" class="border p-2 rounded w-full mb-2" required>
+                                                {% for i in range(1, 6) %}                                                
+                                                    <option value="{{ i }}" {% if data.user_review and data.user_review[1] == i %}selected{% endif %}>{{ i }}
+                                                        {% if i==1 %} &#11088; {% endif %}
+                                                        {% if i==2 %} &#11088;&#11088; {% endif %}
+                                                        {% if i==3 %} &#11088;&#11088;&#11088; {% endif %}
+                                                        {% if i==4 %} &#11088;&#11088;&#11088;&#11088; {% endif %}
+                                                        {% if i==5 %} &#11088;&#11088;&#11088;&#11088;&#11088; {% endif %}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                            <textarea name="comment" placeholder="Your review..." class="border p-2 rounded w-full mb-2" required>{{ data.user_review[2] if data.user_review else '' }}</textarea>
+                                            <button type="submit" class="bg-green-500 text-white p-2 rounded">{{ 'Update Review' if data.user_review else 'Submit Review' }}</button>
+                                        </form>
+                                    {% else %}
+                                        <form method="POST" action="{{ url_for('subscribe') }}" class="mt-4">
+                                            <button type="submit" class="bg-green-500 text-white p-2 rounded">Subscribe to Review</button>
+                                        </form>
+                                    {% endif %}
+                                {% else %}
+                                    <p class="mt-4">Please <a href="{{ url_for('login') }}" class="text-green-500">log in</a> and subscribe to post a review.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+                    {% endfor %}
+            <!-- Pagination Controls -->
+            <div class="flex justify-center mt-4">
+                {% if page > 1 %}
+                    <a href="{{ url_for('index', page=page-1, search=search_query) }}" class="bg-green-500 text-white px-4 py-2 rounded-l hover:bg-green-600">Previous</a>
+                {% endif %}
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                        <span class="bg-green-700 text-white px-4 py-2">{{ p }}</span>
+                    {% else %}
+                        <a href="{{ url_for('index', page=p, search=search_query) }}" class="bg-green-500 text-white px-4 py-2 hover:bg-green-600">{{ p }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if page < total_pages %}
+                    <a href="{{ url_for('index', page=page+1, search=search_query) }}" class="bg-green-500 text-white px-4 py-2 rounded-r hover:bg-green-600">Next</a>
+                {% endif %}
+            </div>
+        {% else %}
+            <p class="text-gray-700">No books found matching your search.</p>
+        {% endif %}
+    </div>
+    <section class="container bg-violet-100  p-4">
+        <div class="flex justify-center">
+            <div class="rounded-lg shadow-lg bg-white max-w-sm">
+                <a href="#!">
+                    <!--video width="320" height="240" controls class="w-full rounded-t-lg">
+                        <source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" type="video/mp4">
+                        <source src="movie.ogg" type="video/ogg">
+                        Your browser does not support the video tag.
+                    </video-->
+                    <iframe width="100%" height="315" src="https://www.youtube.com/embed/9kjIdUJnkgo?si=q1dwB6FEOX78WiSg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </a>
+                <div class="p-6">
+                    <h5 class="text-gray-900 text-xl font-medium mb-2">Youtube Videos</h5>
+                    <p class="text-gray-700 text-base mb-4">
+                        We are also creating videos of the stories from our books.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <footer  class="bg-green-500 p-4 text-white">
+        <span class="justify-center">Copyright @ Tanri.in</span>
+    </footer>
+</body>
+</html>

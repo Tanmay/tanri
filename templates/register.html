@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-green-500 p-4">
+        <div class="container mx-auto flex justify-between">
+            <a href="{{ url_for('index') }}" class="text-white text-lg font-bold">Tanri Book Store</a>
+            <div>
+                {% if session.user_id %}
+                    {% if session.is_admin %}
+                        <a href="{{ url_for('admin') }}" class="text-white mr-4">Admin</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}" class="text-white">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="text-white mr-4">Login</a>
+                    <a href="{{ url_for('register') }}" class="text-white">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    <div class="container mx-auto p-4">
+        <h2 class="text-2xl mb-4">Register</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="bg-{{ 'green' if category == 'success' else 'red' }}-100 border border-{{ 'green' if category == 'success' else 'red' }}-400 text-{{ 'green' if category == 'success' else 'red' }}-700 px-4 py-3 rounded mb-4">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST">
+            <input type="text" name="username" placeholder="Username" class="border p-2 rounded w-full mb-2" required>
+            <input type="password" name="password" placeholder="Password" class="border p-2 rounded w-full mb-2" required>
+            <button type="submit" class="bg-green-500 text-white p-2 rounded">Register</button>
+        </form>
+        <a href="{{ url_for('login') }}" class="text-green-500">Already have an account? Login</a>
+    </div>
+</body>
+</html>

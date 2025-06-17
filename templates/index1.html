@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-green-500 p-4">
+        <div class="container mx-auto flex justify-between">
+            <a href="{{ url_for('index') }}" class="text-white text-lg font-bold">Tanri Book Store</a>
+            <div>
+                {% if session.user_id %}
+                    {% if session.is_admin %}
+                        <a href="{{ url_for('admin') }}" class="text-white mr-4">Admin</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}" class="text-white">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="text-white mr-4">Login</a>
+                    <a href="{{ url_for('register') }}" class="text-white">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    <div class="dark:bg-gray-800">
+        <div class="dark:bg-transparent">
+            <div class="mx-auto flex flex-col items-center py-12 sm:py-24">
+                <div class="w-11/12 sm:w-2/3 lg:flex justify-center items-center flex-col mb-5 sm:mb-10">
+                    <h1
+                        class="text-4xl sm:text-5xl md:text-5xl lg:text-5xl xl:text-6xl text-center text-gray-800 dark:text-white font-black leading-10">
+                        Discover Great
+                        <span class="text-violet-800 dark:text-violet-500">Books.</span>
+                    </h1>
+                    <p class="mt-5 sm:mt-10 lg:w-10/12 text-gray-600 dark:text-gray-300 font-normal text-center text-xl">
+                        
+                        Browse our curated collection of quality books. All orders fulfilled through our trusted partnership with Pothi.com for fast, reliable delivery.
+                    </p>
+                </div>
+                <div class="flex w-11/12 md:w-8/12 xl:w-6/12">
+                    <div class="flex rounded-md w-full">
+                        <input type="text" name="q"
+                            class="w-full p-3 rounded-md rounded-r-none border border-2 border-gray-300 placeholder-current dark:bg-gray-500  dark:text-gray-300 dark:border-none "
+                            placeholder="keyword" />
+                        <button
+                            class="inline-flex items-center gap-2 bg-violet-700 text-white text-lg font-semibold py-3 px-6 rounded-r-md">
+                            <span>Find</span>
+                            <svg class="text-gray-200 h-5 w-5 p-0 fill-current" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px"
+                                viewBox="0 0 56.966 56.966" style="enable-background:new 0 0 56.966 56.966;"
+                                xml:space="preserve">
+                                <path
+                                    d="M55.146,51.887L41.588,37.786c3.486-4.144,5.396-9.358,5.396-14.786c0-12.682-10.318-23-23-23s-23,10.318-23,23  s10.318,23,23,23c4.761,0,9.298-1.436,13.177-4.162l13.661,14.208c0.571,0.593,1.339,0.92,2.162,0.92  c0.779,0,1.518-0.297,2.079-0.837C56.255,54.982,56.293,53.08,55.146,51.887z M23.984,6c9.374,0,17,7.626,17,17s-7.626,17-17,17  s-17-7.626-17-17S14.61,6,23.984,6z" />
+                            </svg>
+                    </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container mx-auto p-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="bg-{{ 'green' if category == 'success' else 'red' }}-100 border border-{{ 'green' if category == 'success' else 'red' }}-400 text-{{ 'green' if category == 'success' else 'red' }}-700 px-4 py-3 rounded mb-4">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <h2 class="text-2xl mb-4">Your Books</h2>
+        {% for data in books %}
+            <div class="bg-white p-4 rounded shadow mb-4 flex">
+                {% if data.book[3] %}
+                    <img src="{{ data.book[3] }}" alt="{{ data.book[1] }} cover" class="w-32 h-48 object-cover mr-4 rounded">
+                {% else %}
+                    <div class="w-32 h-48 bg-gray-200 mr-4 rounded flex items-center justify-center">No Image</div>
+                {% endif %}
+                <div class="flex-1">
+                    <h3 class="text-xl mb-2">{{ data.book[1] }}</h3>
+                    <p class="mb-2">Author: {{ data.book[2] }}</p>
+                    <p class="mb-2">{{ data.book[4] }}</p>
+                    <h4 class="text-lg mb-2">Buy Now</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="bg-gray-100 p-4 rounded">
+                        {% for store in data.stores %}
+                                <p><strong>{{ store[2] }}</strong></p>
+                                <p>Price: ${{ store[3] }}</p>
+                                <a href="{{ store[4] }}" class="bg-green-500 text-white p-2 rounded inline-block">Buy from {{ store[2] }}</a>
+                        {% endfor %}
+                        </div>
+                        <div class="bg-gray-100 p-4 rounded">
+                            <h4 class="text-lg mb-2">Reviews</h4>
+                            {% for review in data.reviews %}
+                                <div class="bg-gray-100 p-4 rounded mb-2">
+                                    <p><strong>{{ review[5] }}</strong>: 
+                                        {% if review[3]==1 %} &#11088; {% endif %}
+                                        {% if review[3]==2 %} &#11088;&#11088; {% endif %}
+                                        {% if review[3]==3 %} &#11088;&#11088;&#11088; {% endif %}
+                                        {% if review[3]==4 %} &#11088;&#11088;&#11088;&#11088; {% endif %}
+                                        {% if review[3]==5 %} &#11088;&#11088;&#11088;&#11088;&#11088; {% endif %}</p>
+                                    <p>{{ review[4] }}</p>
+                                    {% if session.user_id and review[2] == session.user_id %}
+                                        <form method="POST" action="{{ url_for('delete_review_user', review_id=review[0]) }}" class="mt-2">
+                                            <button type="submit" class="text-red-500 text-sm">Delete Your Review</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                            {% if session.user_id %}
+                                {% if session.is_subscribed %}
+                                    <h4 class="text-lg mt-4 mb-2">{{ 'Edit Your Review' if data.user_review else 'Add a Review' }}</h4>
+                                    <form method="POST" action="{{ url_for('review', book_id=data.book[0]) }}">
+                                        <select name="rating" class="border p-2 rounded w-full mb-2" required>
+                                            {% for i in range(1, 6) %}                                                
+                                                <option value="{{ i }}" {% if data.user_review and data.user_review[1] == i %}selected{% endif %}>{{ i }}
+                                                    {% if i==1 %} &#11088; {% endif %}
+                                                    {% if i==2 %} &#11088;&#11088; {% endif %}
+                                                    {% if i==3 %} &#11088;&#11088;&#11088; {% endif %}
+                                                    {% if i==4 %} &#11088;&#11088;&#11088;&#11088; {% endif %}
+                                                    {% if i==5 %} &#11088;&#11088;&#11088;&#11088;&#11088; {% endif %}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                        <textarea name="comment" placeholder="Your review..." class="border p-2 rounded w-full mb-2" required>{{ data.user_review[2] if data.user_review else '' }}</textarea>
+                                        <button type="submit" class="bg-green-500 text-white p-2 rounded">{{ 'Update Review' if data.user_review else 'Submit Review' }}</button>
+                                    </form>
+                                {% else %}
+                                    <form method="POST" action="{{ url_for('subscribe') }}" class="mt-4">
+                                        <button type="submit" class="bg-green-500 text-white p-2 rounded">Subscribe to Review</button>
+                                    </form>
+                                {% endif %}
+                            {% else %}
+                                <p class="mt-4">Please <a href="{{ url_for('login') }}" class="text-green-500">log in</a> and subscribe to post a review.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                {% endfor %}
+    </div>
+</body>
+</html>
